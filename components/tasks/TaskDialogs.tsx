@@ -25,6 +25,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { DateTime } from "luxon";
+import { sanitizeText, validateTaskTitle, validateTaskDescription, validateDate } from "@/lib/utils";
 
 type AddProps = {
   open: boolean;
@@ -84,13 +85,18 @@ function AddTaskForm({
 
   const handle = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!title.trim()) return;
+    const sanitizedTitle = sanitizeText(title, 200);
+    const sanitizedDesc = sanitizeText(desc, 5000);
+    const sanitizedDueDate = dueDate && validateDate(dueDate) ? dueDate : null;
+
+    if (!validateTaskTitle(sanitizedTitle) || !validateTaskDescription(sanitizedDesc)) return;
+
     await onSubmit({
-      title: title.trim(),
-      description: desc.trim(),
+      title: sanitizedTitle,
+      description: sanitizedDesc,
       priority,
       status: defaultStatus,
-      due_date: dueDate || null,
+      due_date: sanitizedDueDate,
     });
     onOpenChange(false);
   };
@@ -104,7 +110,7 @@ function AddTaskForm({
           </Label>
           <Input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(sanitizeText(e.target.value, 200))}
             placeholder="Enter a clear, descriptive title"
             required
             className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 bg-white dark:bg-slate-800/50"
@@ -116,7 +122,7 @@ function AddTaskForm({
           </Label>
           <Textarea
             value={desc}
-            onChange={(e) => setDesc(e.target.value)}
+            onChange={(e) => setDesc(sanitizeText(e.target.value, 5000))}
             placeholder="Provide additional details about this task (optional)"
             rows={4}
             className="border-slate-200 dark:border-slate-700 focus:border-green-500 focus:ring-green-500/20 resize-none bg-white dark:bg-slate-800/50"
@@ -255,12 +261,19 @@ function EditTaskForm({
   const handle = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!task) return;
+
+    const sanitizedTitle = sanitizeText(title, 200);
+    const sanitizedDesc = sanitizeText(desc, 5000);
+    const sanitizedDueDate = dueDate && validateDate(dueDate) ? dueDate : null;
+
+    if (!validateTaskTitle(sanitizedTitle) || !validateTaskDescription(sanitizedDesc)) return;
+
     await onSubmit(task.id, {
-      title: title.trim(),
-      description: desc.trim(),
+      title: sanitizedTitle,
+      description: sanitizedDesc,
       priority,
       status,
-      due_date: dueDate || null,
+      due_date: sanitizedDueDate,
     });
     onOpenChange(false);
   };
@@ -274,7 +287,7 @@ function EditTaskForm({
           </Label>
           <Input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(sanitizeText(e.target.value, 200))}
             placeholder="Enter a clear, descriptive title"
             required
             className="border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 bg-white dark:bg-slate-800/50"
@@ -286,7 +299,7 @@ function EditTaskForm({
           </Label>
           <Textarea
             value={desc}
-            onChange={(e) => setDesc(e.target.value)}
+            onChange={(e) => setDesc(sanitizeText(e.target.value, 5000))}
             placeholder="Provide additional details about this task (optional)"
             rows={4}
             className="border-slate-200 dark:border-slate-700 focus:border-green-500 focus:ring-green-500/20 resize-none bg-white dark:bg-slate-800/50"

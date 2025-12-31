@@ -28,6 +28,7 @@ type Props = {
   onUpdate?: (id: number, payload: Partial<Task>) => Promise<Task | null> | void;
   onDelete?: (id: number) => Promise<boolean> | void;
   onRefresh?: () => void;
+  disableOrdering?: boolean;
 };
 
 export default function Board({
@@ -38,6 +39,7 @@ export default function Board({
   onUpdate,
   onDelete,
   onRefresh,
+  disableOrdering = false,
 }: Props) {
   const backlogOrder = useTaskStore((s) => s.backlogOrder);
   const inProgressOrder = useTaskStore((s) => s.inProgressOrder);
@@ -108,16 +110,16 @@ export default function Board({
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragCancel={handleDragCancel} collisionDetection={closestCenter}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start h-full">
-        <SortableContext items={backlogOrder}>
-          <Column title="To Do" tasks={backlog} status="BACKLOG" order={backlogOrder} containerId={`column-BACKLOG`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
+        <SortableContext items={disableOrdering ? backlog.map(t => t.id.toString()) : backlogOrder}>
+          <Column title="To Do" tasks={backlog} status="BACKLOG" order={disableOrdering ? undefined : backlogOrder} containerId={`column-BACKLOG`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
         </SortableContext>
 
-        <SortableContext items={inProgressOrder}>
-          <Column title="In Progress" tasks={inProgress} status="IN_PROGRESS" order={inProgressOrder} containerId={`column-IN_PROGRESS`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
+        <SortableContext items={disableOrdering ? inProgress.map(t => t.id.toString()) : inProgressOrder}>
+          <Column title="In Progress" tasks={inProgress} status="IN_PROGRESS" order={disableOrdering ? undefined : inProgressOrder} containerId={`column-IN_PROGRESS`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
         </SortableContext>
 
-        <SortableContext items={doneOrder}>
-          <Column title="Done" tasks={done} status="DONE" order={doneOrder} containerId={`column-DONE`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
+        <SortableContext items={disableOrdering ? done.map(t => t.id.toString()) : doneOrder}>
+          <Column title="Done" tasks={done} status="DONE" order={disableOrdering ? undefined : doneOrder} containerId={`column-DONE`} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onRefresh={onRefresh} />
         </SortableContext>
 
         <DragOverlay dropAnimation={{ duration: 150 }}>
